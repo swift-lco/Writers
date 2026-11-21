@@ -1,5 +1,5 @@
 {
-  "originHash" : "33669756733fc0d18d55648d4f9fe29b7d0657b0b5e449424876dd1ebab37f53",
+  "originHash" : "36a6ad7a2392b466f74f4234526d2d1df6e10333f4704d99b9f0004803ae915f",
   "pins" : [
     {
       "identity" : "atomos",
@@ -70,7 +70,7 @@
       "location" : "https://github.com/leviouwendijk/IO.git",
       "state" : {
         "branch" : "master",
-        "revision" : "1befc7a71a226135bf19769da0100d101f895a64"
+        "revision" : "a793815ec4e1a536bbc606bcc0f91bdf2df26938"
       }
     },
     {
@@ -142,7 +142,7 @@
       "location" : "https://github.com/leviouwendijk/Readers.git",
       "state" : {
         "branch" : "master",
-        "revision" : "e7d3b31a5bed16a83432fa6864c24248fdc925c4"
+        "revision" : "66c24cb5d8f2a3794408fbae231e9a9d266457e7"
       }
     },
     {

@@ -23,6 +23,7 @@ let package = Package(
 
         .package(url: "https://github.com/leviouwendijk/Testing.git", branch: "master"),
         .package(path: ".."),
+        .package(url: "https://github.com/leviouwendijk/Errors.git", branch: "master"),
     ],
     targets: [
         .executableTarget(
@@ -34,6 +35,7 @@ let package = Package(
                 .product(name: "Readers", package: "Readers"),
                 .product(name: "Path", package: "Path"),
                 .product(name: "Testing", package: "Testing"),
+                .product(name: "Errors", package: "Errors"),
             ]
         ),
     ]

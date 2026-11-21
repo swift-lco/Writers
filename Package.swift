@@ -20,6 +20,7 @@ let package = Package(
         .package(url: "https://github.com/leviouwendijk/Position.git", branch: "master"),
         .package(url: "https://github.com/leviouwendijk/Readers.git", branch: "master"),
         .package(url: "https://github.com/leviouwendijk/Path.git", branch: "master"),
+        .package(url: "https://github.com/leviouwendijk/Errors.git", branch: "master"),
     ],
     targets: [
         .target(
@@ -30,6 +31,7 @@ let package = Package(
                 .product(name: "Position", package: "Position"),
                 .product(name: "Readers", package: "Readers"),
                 .product(name: "Path", package: "Path"),
+                .product(name: "Errors", package: "Errors"),
             ],
         ),
     ]

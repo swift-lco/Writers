@@ -1,3 +1,4 @@
+import Errors
 import Foundation
 import Difference
 
@@ -44,7 +45,7 @@ public enum SafeFileError: Error, LocalizedError {
             return "No current file to replace at: \(url.path)"
 
         case .io(let underlying):
-            return "I/O error: \(underlying.localizedDescription)"
+            return "I/O error: \(underlying.explanation)"
         }
     }
 
