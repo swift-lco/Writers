@@ -184,8 +184,10 @@ public struct StandardMutationApplier: Sendable {
         )
     }
 
-    /// A move through IO's native path is one rename: when it throws a
-    /// `FileSystemError`, nothing moved. A copy that throws
+    /// A move on one volume is one rename; across volumes IO copies and then
+    /// removes the source. Either way a `FileSystemError` other than `.remove`
+    /// means nothing moved (IO undoes a copy whose source it cannot remove);
+    /// `.remove` means the source may be partly gone. A copy that throws
     /// `FileSystemError(.copy)` left no destination: IO removes what a failed
     /// copy created, and reports a failed removal as `.remove` instead. Any
     /// other error (Foundation's cross-volume move) or any other kind of entry
@@ -200,7 +202,7 @@ public struct StandardMutationApplier: Sendable {
 
         switch planned.entry {
         case .move:
-            return .none
+            return failure.operation == .remove ? .uncertain : .none
         case .copy:
             return failure.operation == .copy || failure.operation == .create_directory
                 ? .none

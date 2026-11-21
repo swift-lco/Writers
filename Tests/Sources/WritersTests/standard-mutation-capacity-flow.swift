@@ -87,6 +87,39 @@ extension WritersFlowSuite {
                 try Expect.equal(published.result.failed?.effect, StandardMutationFailureEffect.none, "capacity.clean_failure")
                 try Expect.false(FileManager.default.fileExists(atPath: landed.path), "capacity.no_partial_copy")
                 try Expect.false(await coordinator.requires_recovery(), "capacity.not_blocked")
+
+                // Moves between volumes: IO copies then removes the source.
+                // Free the filler first, then move a tree onto FAT and back.
+                try FileManager.default.removeItem(at: filler)
+                let tree = workspace.file("tree")
+                try FileManager.default.createDirectory(at: tree.appendingPathComponent("inner"), withIntermediateDirectories: true)
+                _ = try StandardWriter(tree.appendingPathComponent("inner/deep.txt")).write("deep\n", options: .overwriteWithoutBackup)
+                let onFAT = mount.appendingPathComponent("tree")
+                let moved = StandardMutationApplier().apply(try StandardMutationPlanner().plan([
+                    .move(.init(source: tree, destination: onFAT))
+                ]))
+                try Expect.equal(moved.status, .applied, "capacity.cross_volume_move")
+                try Expect.false(FileManager.default.fileExists(atPath: tree.path), "capacity.cross_volume_source_gone")
+                try Expect.equal(try workspace.read(onFAT.appendingPathComponent("inner/deep.txt")), "deep\n", "capacity.cross_volume_content")
+                let back = StandardMutationRollbackApplier().apply(try Expect.notNil(moved.rollback, "capacity.cross_volume_rollback_plan"))
+                try Expect.equal(back.status, .applied, "capacity.cross_volume_rollback")
+                try Expect.equal(try workspace.read(tree.appendingPathComponent("inner/deep.txt")), "deep\n", "capacity.cross_volume_restored")
+
+                // Too large for FAT: refused at planning, so try it unplanned
+                // through the coordinator after the volume fills up.
+                let big = workspace.file("big.bin")
+                try sparse(big, size: 16 << 20)
+                let bigOnFAT = mount.appendingPathComponent("big.bin")
+                let mover = await coordinator.participant(name: "cross-volume")
+                _ = try await mover.submit(.move(.init(source: big, destination: bigOnFAT)))
+                _ = try StandardWriter(filler).write("", options: .overwriteWithoutBackup)
+                _ = truncate(filler.path, off_t(30 << 20))
+                let failedMove = try Expect.notNil(try await coordinator.publish(), "capacity.move_publication")
+                try Expect.equal(failedMove.result.status, .failed, "capacity.move_failed")
+                try Expect.equal(failedMove.result.failed?.effect, StandardMutationFailureEffect.none, "capacity.move_clean_failure")
+                try Expect.true(FileManager.default.fileExists(atPath: big.path), "capacity.move_source_kept")
+                try Expect.false(FileManager.default.fileExists(atPath: bigOnFAT.path), "capacity.move_no_partial")
+                try Expect.false(await coordinator.requires_recovery(), "capacity.move_not_blocked")
                 #endif
             }
         }

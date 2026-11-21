@@ -373,7 +373,11 @@ public struct StandardMutationPlanner: Sendable {
                     source: entry.destination,
                     destination: entry.source,
                     requiredSourceState: source.relocating(
-                        to: entry.destination
+                        to: entry.destination,
+                        acrossVolumes: Self.crossesVolumes(
+                            source: source,
+                            destination: entry.destination
+                        )
                     ),
                     // After a case-only rename the old spelling still
                     // resolves to the moved object.
@@ -430,6 +434,31 @@ public struct StandardMutationPlanner: Sendable {
             ),
             warnings: warningCodes
         )
+    }
+
+    /// Whether a move from `source` to `destination` crosses volumes: the
+    /// source's device against that of the destination's nearest existing
+    /// ancestor. One inspect (more only for missing parents), at planning.
+    static func crossesVolumes(
+        source: StandardMoveResourceState,
+        destination: URL
+    ) -> Bool {
+        guard let device = source.identity?.deviceID else {
+            return false
+        }
+        var directory = destination.standardizedFileURL.deletingLastPathComponent()
+        while true {
+            if let snapshot = try? FileInspector(directory).inspect(),
+               snapshot.existed
+            {
+                return snapshot.identity.map { $0.deviceID != device } ?? false
+            }
+            let parent = directory.deletingLastPathComponent()
+            guard parent.path != directory.path else {
+                return false
+            }
+            directory = parent
+        }
     }
 
     /// Whether `destination` is another spelling of `source`: the same object

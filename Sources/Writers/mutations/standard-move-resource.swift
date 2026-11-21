@@ -61,16 +61,21 @@ public struct StandardMoveResourceState: Sendable, Codable, Hashable {
         )
     }
 
+    /// The same object at `url` after a move. A move across volumes is a
+    /// copy: identity (device, inode) and modification time are new, and a
+    /// directory's size is the filesystem's own, so only existence, kind and
+    /// a file's byte count carry over; the rest is left unrecorded.
     public func relocating(
-        to url: URL
+        to url: URL,
+        acrossVolumes: Bool = false
     ) -> Self {
         .init(
             snapshot: .init(
                 url: url,
                 existed: existed,
-                byteCount: byteCount,
-                modifiedAt: modifiedAt,
-                identity: identity,
+                byteCount: acrossVolumes && kind != .file ? nil : byteCount,
+                modifiedAt: acrossVolumes ? nil : modifiedAt,
+                identity: acrossVolumes ? nil : identity,
                 kind: kind
             )
         )
@@ -81,11 +86,15 @@ public struct StandardMoveResourceState: Sendable, Codable, Hashable {
             url
         )
 
+        // An existing object's unrecorded facts (nil) are not compared.
         guard current.existed == existed,
               current.kind == kind,
-              current.byteCount == byteCount,
-              current.modifiedAt == modifiedAt,
-              current.identity == identity
+              !existed || byteCount == nil || current.byteCount == byteCount,
+              !existed || modifiedAt == nil || current.modifiedAt == modifiedAt,
+              !existed || identity == nil || current.identity == identity,
+              existed || (current.byteCount == byteCount
+                  && current.modifiedAt == modifiedAt
+                  && current.identity == identity)
         else {
             throw StandardMutationError.metadata_drift_detected(
                 target: url
