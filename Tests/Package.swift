@@ -16,14 +16,14 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/leviouwendijk/Difference.git", branch: "master"),
-        .package(url: "https://github.com/leviouwendijk/Position.git", branch: "master"),
-        .package(url: "https://github.com/leviouwendijk/Readers.git", branch: "master"),
-        .package(url: "https://github.com/leviouwendijk/Path.git", branch: "master"),
+        .package(url: "https://github.com/swift-lco/Difference.git", branch: "master"),
+        .package(url: "https://github.com/swift-lco/Position.git", branch: "master"),
+        .package(url: "https://github.com/swift-lco/Readers.git", branch: "master"),
+        .package(url: "https://github.com/swift-lco/Path.git", branch: "master"),
 
         .package(url: "https://github.com/swift-tooling/Testing.git", branch: "master"),
         .package(path: ".."),
-        .package(url: "https://github.com/leviouwendijk/Errors.git", branch: "master"),
+        .package(url: "https://github.com/swift-lco/Errors.git", branch: "master"),
     ],
     targets: [
         .executableTarget(
